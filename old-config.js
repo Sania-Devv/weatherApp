@@ -1,6 +1,6 @@
 const API_KEY = "780f33a2f0d443a1b7765444261506";
 
-const BASE_URL = "https://api.weatherapi.com/v1";
+const BASE_URL = "https://api.weatherapi.com/v1/current.json?key=780f33a2f0d443a1b7765444261506&q=London&aqi=no";
 
 // Current Weather
 const getCurrentWeather = (city) =>

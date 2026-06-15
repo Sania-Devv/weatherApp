@@ -11,6 +11,7 @@ async function getWeather(city) {
     const data = await response.json();
 
     updateUI(data);
+    console.log(data);
 
   } catch (error) {
     alert(error.message);

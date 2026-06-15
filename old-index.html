@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet"/>
+</head>
+
+<!-- BODY COLOR CHANGE ONLY -->
+<body class="min-h-screen bg-[#0b1b3a] p-4 sm:p-6">
+
+  <!-- WRAPPER (DARK FIX) -->
+  <div class="w-full max-w-7xl min-h-[95vh] mx-auto flex flex-col lg:flex-row bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-full lg:w-24 h-14 lg:h-auto bg-[#8ca6f9] flex lg:flex-col items-center justify-between py-8 px-4 lg:px-0 relative rounded-tl-3xl rounded-bl-3xl lg:rounded-none">
+
+      <div class="flex lg:flex-col gap-8 items-center w-full">
+
+        <!-- ACTIVE ICON -->
+        <button class="bg-[#ff7696] text-white w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg lg:-mr-4 relative z-10 lg:translate-x-10">
+          <i class="ri-dashboard-line"></i>
+        </button>
+
+        <button class="text-white text-2xl hover:text-white/80 transition-colors">
+          <i class="ri-map-pin-line"></i>
+        </button>
+
+        <button class="text-white text-2xl hover:text-white/80 transition-colors">
+          <i class="ri-bar-chart-2-line"></i>
+        </button>
+
+        <button class="text-white text-2xl hover:text-white/80 transition-colors">
+          <i class="ri-calendar-line"></i>
+        </button>
+
+      </div>
+
+      <button class="hidden lg:block text-white text-2xl hover:text-white/80 transition-colors">
+        <i class="ri-settings-3-line"></i>
+      </button>
+
+    </aside>
+
+    <!-- CONTENT (NO DESIGN CHANGE ONLY COLOR FIX) -->
+    <div class="flex flex-col lg:flex-row flex-1">
+
+      <!-- LEFT -->
+      <main class="w-full lg:w-2/3 p-4 sm:p-6 flex flex-col gap-5 text-white bg-slate-900/70">
+
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-4">
+
+          <div>
+            <h1 class="text-3xl sm:text-4xl font-bold">07:32 AM</h1>
+            <p class="text-white/60 text-sm">Wednesday, 14 April 2021</p>
+            <p class="mt-2">☀️ Good morning, Asif!</p>
+          </div>
+
+          <button class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+            <i class="ri-moon-line"></i>
+          </button>
+
+        </div>
+
+        <!-- FORECAST (UNCHANGED) -->
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+
+          <div class="bg-white/10 p-3 rounded-2xl text-center">28°</div>
+          <div class="bg-white/10 p-3 rounded-2xl text-center">22°</div>
+          <div class="bg-white/20 border border-white/30 p-3 rounded-2xl text-center">30°</div>
+          <div class="bg-white/10 p-3 rounded-2xl text-center">25°</div>
+          <div class="bg-white/10 p-3 rounded-2xl text-center">20°</div>
+
+        </div>
+
+        <!-- INFO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <div class="bg-white/10 p-4 rounded-2xl">
+            <h3 class="text-white/60 text-sm">Air Quality</h3>
+            <p class="text-2xl font-bold mt-2">Good</p>
+          </div>
+
+          <div class="bg-white/10 p-4 rounded-2xl">
+            <h3 class="text-white/60 text-sm">Rainfall</h3>
+            <div class="h-16 bg-white/5 rounded-xl mt-3"></div>
+          </div>
+
+        </div>
+
+        <div class="bg-white/10 p-4 rounded-2xl flex-1 flex items-center justify-center">
+          <p class="text-white/50">Temperature Chart</p>
+        </div>
+
+      </main>
+
+      <!-- RIGHT -->
+      <section class="w-full lg:w-1/3 p-4 sm:p-6 flex flex-col gap-5 bg-slate-900/70 border-t lg:border-t-0 lg:border-l border-white/10">
+
+        <!-- SEARCH -->
+        <div class="flex items-center gap-2">
+
+          <input type="text" placeholder="Search city..."
+            class="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50"/>
+
+          <button class="bg-pink-500 px-3 py-3 rounded-xl">
+            <i class="ri-search-line"></i>
+          </button>
+
+          <img src="https://i.pravatar.cc/40"
+            class="w-10 h-10 rounded-full border border-white/30 object-cover"/>
+
+        </div>
+
+        <!-- BIG CARD -->
+        <div class="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 p-6 rounded-3xl text-center text-white">
+          <h2>Dhaka</h2>
+          <div class="text-5xl font-bold mt-2">29°</div>
+          <p class="text-white/80 mt-2">☀️ Sunny</p>
+
+          <div class="mt-4 text-sm space-y-1">
+            <p>🌬 Wind: 19 km/h</p>
+            <p>💧 Humidity: 22%</p>
+          </div>
+        </div>
+
+        <!-- SMALL LIST -->
+        <div class="space-y-3">
+
+          <div class="bg-slate-800/60 p-3 rounded-2xl flex justify-between">
+            <span>Tokyo</span>
+            <span>26°</span>
+          </div>
+
+          <div class="bg-slate-800/60 p-3 rounded-2xl flex justify-between">
+            <span>New York</span>
+            <span>31°</span>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+ <script src="config.js"></script>
+ <script src="main.js"></script>
+</body>
+</html>

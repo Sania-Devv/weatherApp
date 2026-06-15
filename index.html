@@ -1,164 +1,354 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WeatherApp</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css"
-      rel="stylesheet"
-    />
-  </head>
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WeatherScope Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
 
-  <body class="min-h-screen flex items-center justify-center bg-slate-100">
-    <div
-      class="w-full max-w-7xl flex bg-white rounded-3xl overflow-hidden shadow-lg"
-    >
-      <!-- SIDEBAR -->
-      <aside
-        class="w-20 bg-slate-50 flex flex-col items-center justify-between py-6"
-      >
-        <div class="flex flex-col gap-6">
-          <button class="text-blue-500 text-2xl">
-            <i class="ri-dashboard-line"></i>
-          </button>
+<div class="app">
 
-          <button class="text-slate-500 text-xl hover:text-blue-500">
-            <i class="ri-map-pin-line"></i>
-          </button>
+  <!-- ══════════════════════════════════════
+       LEFT ICON SIDEBAR
+  ══════════════════════════════════════ -->
+  <aside class="icon-sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-10A5.002 5.002 0 003 15z"/>
+      </svg>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-icon active" title="Dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+      </button>
+      <button class="nav-icon" title="Locations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+      </button>
+      <button class="nav-icon" title="Analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V7m4 12V3m4 16v-6"/>
+        </svg>
+      </button>
+      <button class="nav-icon" title="Calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </button>
+      <button class="nav-icon" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path stroke-linecap="round" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+    </nav>
+  </aside>
 
-          <button class="text-slate-500 text-xl hover:text-blue-500">
-            <i class="ri-bar-chart-line"></i>
-          </button>
+  <!-- ══════════════════════════════════════
+       MAIN PANEL
+  ══════════════════════════════════════ -->
+  <main class="main-panel">
 
-          <button class="text-slate-500 text-xl hover:text-blue-500">
-            <i class="ri-calendar-line"></i>
+    <!-- Top Row: Time + Theme Toggle -->
+    <div class="top-row">
+      <div class="time-block">
+        <div class="time" id="live-time">07:32 AM</div>
+        <div class="date-str" id="live-date">Wednesday, 14 April, 2021</div>
+        <div class="greeting">
+          <span class="greeting-icon">☀️</span>
+          <span id="greeting-text">Good morning, Asif!</span>
+        </div>
+      </div>
+      <!-- Theme Toggle — top right of main panel, matches image -->
+      <div class="theme-toggle-wrap">
+        <button class="theme-btn active" id="btn-light" onclick="setTheme('light')" title="Light">☀️</button>
+        <button class="theme-btn" id="btn-dark" onclick="setTheme('dark')" title="Dark">🌙</button>
+      </div>
+    </div>
+
+    <!-- Weekly Forecast Strip -->
+    <div class="forecast-strip">
+      <div class="fc-card" onclick="activateDay(this)">
+        <div class="fc-day">Sun</div>
+        <div class="fc-icon">⛈️</div>
+        <div class="fc-temp">28°</div>
+      </div>
+      <div class="fc-card" onclick="activateDay(this)">
+        <div class="fc-day">Mon</div>
+        <div class="fc-icon">🌧️</div>
+        <div class="fc-temp">17°</div>
+      </div>
+      <div class="fc-card" onclick="activateDay(this)">
+        <div class="fc-day">Tue</div>
+        <div class="fc-icon">⛅</div>
+        <div class="fc-temp">20°</div>
+      </div>
+      <div class="fc-card active" onclick="activateDay(this)">
+        <div class="fc-day">Wed</div>
+        <div class="fc-icon">⛈️</div>
+        <div class="fc-temp">29°</div>
+      </div>
+      <div class="fc-card" onclick="activateDay(this)">
+        <div class="fc-day">Thu</div>
+        <div class="fc-icon">🌙</div>
+        <div class="fc-temp">22°</div>
+      </div>
+      <div class="fc-card" onclick="activateDay(this)">
+        <div class="fc-day">Fri</div>
+        <div class="fc-icon">🌤️</div>
+        <div class="fc-temp">16°</div>
+      </div>
+    </div>
+
+    <!-- Bottom Grid: AQI+Rainfall | Sunrise+Sunset -->
+    <div class="bottom-grid">
+
+      <!-- LEFT COL -->
+      <div class="left-col">
+
+        <!-- Air Quality Index -->
+        <div class="card aqi-card">
+          <div class="card-header">
+            <span class="card-title">Air Quality Index</span>
+            <span class="card-sub">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ico12"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              Uttara, Dhaka
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="ico10"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </div>
+          <div class="aqi-status-row">
+            <span class="aqi-leaf">🍃</span>
+            <div>
+              <div class="aqi-good">Good</div>
+              <div class="aqi-desc">A perfect day for a walk!</div>
+            </div>
+            <button class="refresh-btn">Refresh</button>
+          </div>
+          <div class="aqi-badges">
+            <div class="aqi-badge" style="--c:#6366f1"><span class="av">9.3</span><span class="al">PM2.5</span></div>
+            <div class="aqi-badge" style="--c:#f59e0b"><span class="av">12.2</span><span class="al">PM10</span></div>
+            <div class="aqi-badge" style="--c:#10b981"><span class="av">4.8</span><span class="al">SO₂</span></div>
+            <div class="aqi-badge" style="--c:#ef4444"><span class="av">4.6</span><span class="al">NO₂</span></div>
+            <div class="aqi-badge" style="--c:#3b82f6"><span class="av">6.5</span><span class="al">O₃</span></div>
+            <div class="aqi-badge" style="--c:#8b5cf6"><span class="av">0.9</span><span class="al">CO</span></div>
+          </div>
+        </div>
+
+        <!-- Monthly Rainfall -->
+        <div class="card rainfall-card">
+          <div class="card-header">
+            <span class="card-title">Monthly Rainfall</span>
+            <span class="legend">
+              <span class="dot blue"></span>Rain
+              <span class="dot orange" style="margin-left:8px"></span>Sun
+            </span>
+          </div>
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COL: Sunrise & Sunset -->
+      <div class="card ss-card">
+        <div class="card-header">
+          <span class="card-title">Sunrise &amp; Sunset</span>
+          <button class="plus-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg>
           </button>
         </div>
 
-        <button class="text-slate-500 text-xl hover:text-blue-500">
-          <i class="ri-settings-3-line"></i>
-        </button>
-      </aside>
-
-      <!-- MAIN -->
-      <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- CENTER -->
-        <section class="lg:col-span-2 flex flex-col gap-6">
-          <!-- HEADER -->
-          <div class="flex justify-between items-start">
-            <!-- LEFT SIDE: TIME + TEXT -->
-            <div>
-              <h1 id="timeDisplay" class="text-3xl font-bold">07:32 AM</h1>
-              <p class="text-sm text-gray-400">Wednesday, 14 April</p>
-              <h2 class="mt-2 text-lg">☀️ Good Morning</h2>
-            </div>
-
-            <!-- RIGHT SIDE: TOGGLE BUTTON -->
-            <button
-              id="themeToggle"
-              class="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-xl shadow-sm hover:scale-95 transition"
-            >
-              <i id="themeIcon" class="ri-moon-line"></i>
-            </button>
+        <div class="ss-item">
+          <div class="ss-header">
+            <span class="ss-dot blue"></span>
+            <span class="ss-city">Dhaka</span>
+            <button class="more-btn">⋮</button>
           </div>
-
-          <!-- FORECAST -->
-          <div class="grid grid-cols-5 gap-3">
-            <div class="p-3 bg-slate-100 rounded-xl text-center">
-              <i class="ri-thunderstorms-line"></i>
-              <p>28°</p>
-            </div>
-
-            <div class="p-3 bg-slate-100 rounded-xl text-center">
-              <i class="ri-rainy-line"></i>
-              <p>22°</p>
-            </div>
-
-            <div class="p-3 bg-blue-500 text-white rounded-xl text-center">
-              <i class="ri-sun-line"></i>
-              <p>30°</p>
-            </div>
-
-            <div class="p-3 bg-slate-100 rounded-xl text-center">
-              <i class="ri-cloud-line"></i>
-              <p>25°</p>
-            </div>
-
-            <div class="p-3 bg-slate-100 rounded-xl text-center">
-              <i class="ri-windy-line"></i>
-              <p>20°</p>
-            </div>
+          <div class="ss-times">
+            <div class="ss-tb"><span class="ss-em">🌅</span><div><div class="ss-lbl">Sunrise</div><div class="ss-val">4:40 AM</div></div></div>
+            <div class="ss-tb"><span class="ss-em">🌇</span><div><div class="ss-lbl">Sunset</div><div class="ss-val">6:53 PM</div></div></div>
           </div>
+        </div>
 
-          <!-- INFO BOXES -->
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="p-4 bg-slate-50 rounded-xl">
-              <h3>Air Quality</h3>
-              <p>Good</p>
-            </div>
-
-            <div class="p-4 bg-slate-50 rounded-xl">
-              <h3>Rainfall</h3>
-              <p>Monthly Data</p>
-            </div>
+        <div class="ss-item">
+          <div class="ss-header">
+            <span class="ss-dot orange"></span>
+            <span class="ss-city">Tokyo</span>
+            <button class="more-btn">⋮</button>
           </div>
-
-          <!-- CHART -->
-          <div class="p-4 bg-slate-50 rounded-xl">
-            <canvas id="tempChart"></canvas>
+          <div class="ss-times">
+            <div class="ss-tb"><span class="ss-em">🌅</span><div><div class="ss-lbl">Sunrise</div><div class="ss-val">4:47 AM</div></div></div>
+            <div class="ss-tb"><span class="ss-em">🌇</span><div><div class="ss-lbl">Sunset</div><div class="ss-val">6:49 PM</div></div></div>
           </div>
-        </section>
+        </div>
 
-        <!-- RIGHT PANEL -->
-        <!-- RIGHT PANEL -->
-        <section class="flex flex-col gap-6">
-          <!-- TOP: SEARCH (NEW PLACE) -->
-          <div class="flex gap-2">
-            <input
-              id="searchInput"
-              type="text"
-              placeholder="Search city..."
-              class="w-full p-2 rounded-lg border"
-            />
+        <div class="ss-mini-list">
+          <div class="ss-mini"><span class="ss-dot green"></span><span class="ss-mc">Kabul</span><span class="ss-mt"><span>🌅 5:00 AM</span><span>🌇 7:00 PM</span></span></div>
+          <div class="ss-mini"><span class="ss-dot yellow"></span><span class="ss-mc">Tirana</span><span class="ss-mt"><span>🌅 5:31 AM</span><span>🌇 8:04 PM</span></span></div>
+          <div class="ss-mini"><span class="ss-dot purple"></span><span class="ss-mc">Algiers</span><span class="ss-mt"><span>🌅 5:50 AM</span><span>🌇 7:59 PM</span></span></div>
+        </div>
+      </div>
 
-            <button
-              id="searchBtn"
-              class="bg-blue-500 text-white px-3 rounded-lg"
-            >
-              <i class="ri-search-line"></i>
-            </button>
+    </div><!-- /bottom-grid -->
+  </main>
 
-            <button id="locationBtn" class="bg-slate-200 px-3 rounded-lg">
-              <i class="ri-map-pin-user-line"></i>
-            </button>
-          </div>
+  <!-- ══════════════════════════════════════
+       RIGHT PANEL — Image se exact match
+       Search on top, City card, 2 mini cards
+  ══════════════════════════════════════ -->
+  <aside class="right-panel">
 
-          <!-- CURRENT WEATHER CARD -->
-          <div class="bg-blue-500 text-white p-5 rounded-2xl">
-            <h2 id="cityName">City</h2>
+    <!-- ── TOP BAR: Search + location icon + bell + avatar ── -->
+    <!-- Exact match to image: search pill, location dot-icon, bell, avatar -->
+    <div class="rp-topbar">
+      <div class="rp-search-wrap" id="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rp-search-ico">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search..."
+          class="rp-search-input"
+          autocomplete="off"
+        />
+        <!-- Loading spinner — shows while fetching -->
+        <div class="rp-spinner hidden" id="search-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+      </div>
 
-            <h1 id="temperature" class="text-4xl font-bold">--°</h1>
+      <!-- Location icon button -->
+      <button class="rp-icon-btn" title="Location">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+      </button>
 
-            <p id="condition">Sunny</p>
+      <!-- Bell icon -->
+      <button class="rp-icon-btn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+      </button>
 
-            <div class="mt-4 text-sm">
-              <p> Wind: <span id="wind"></span></p>
-              <p> Humidity: <span id="humidity"></span></p>
-            </div>
-          </div>
-
-          <!-- SAVED CITIES -->
-          <div class="p-4 bg-slate-50 rounded-xl">
-            <h3 class="text-sm font-bold">Saved Cities</h3>
-            <div id="favoritesContainer"></div>
-          </div>
-        </section>
-      </main>
+      <!-- Avatar -->
+      <div class="rp-avatar">AS</div>
     </div>
 
-    <script src="config.js"></script>
-    <script src="main.js"></script>
-  </body>
+    <!-- ── Error message (hidden by default) ── -->
+    <div class="rp-error hidden" id="rp-error">
+      <span>⚠️</span> <span id="rp-error-msg">City not found</span>
+    </div>
+
+    <!-- ── MAIN CITY CARD — Blue gradient, large, Dhaka style ── -->
+    <div class="rp-main-card" id="rp-main-card">
+      <!-- Yellow sun top-right decoration -->
+      <div class="rp-sun">🌕</div>
+
+      <!-- City name row with location pin + dropdown arrow -->
+      <div class="rp-city-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rp-loc-ico">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+        <span class="rp-city-name" id="cityName">Dhaka</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="rp-chev">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+
+      <div class="rp-city-date" id="rp-date">Today, 14 April</div>
+
+      <!-- Weather icon left, big temp right -->
+      <div class="rp-weather-row">
+        <div class="rp-weather-icon" id="rp-icon">⛈️</div>
+        <div class="rp-temp" id="temperature">29°</div>
+      </div>
+
+      <!-- Condition text centered -->
+      <div class="rp-condition" id="condition">Sunny</div>
+
+      <!-- Wind + divider + Humidity -->
+      <div class="rp-stats">
+        <div class="rp-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rp-stat-ico">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v3a2 2 0 01-2 2M5 12a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2"/>
+          </svg>
+          Wind
+          <span id="wind">19 km/h</span>
+        </div>
+        <div class="rp-divider"></div>
+        <div class="rp-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rp-stat-ico">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c0 0-7 7.5-7 12a7 7 0 0014 0c0-4.5-7-12-7-12z"/>
+          </svg>
+          Hum
+          <span id="humidity">22 %</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MINI CARD: Tokyo — Pink/Red gradient ── -->
+    <div class="rp-mini-card pink">
+      <div class="rp-mini-left">
+        <div class="rp-mini-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
+          Wind &nbsp;15 km/h
+        </div>
+        <div class="rp-mini-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c0 0-7 7.5-7 12a7 7 0 0014 0c0-4.5-7-12-7-12z"/></svg>
+          Hum &nbsp;28 %
+        </div>
+      </div>
+      <div class="rp-mini-right">
+        <div class="rp-mini-city">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Tokyo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="rp-mini-temp">26°</div>
+      </div>
+    </div>
+
+    <!-- ── MINI CARD: NY — Orange gradient ── -->
+    <div class="rp-mini-card orange">
+      <div class="rp-mini-left">
+        <div class="rp-mini-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
+          Wind &nbsp;17 km/h
+        </div>
+        <div class="rp-mini-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c0 0-7 7.5-7 12a7 7 0 0014 0c0-4.5-7-12-7-12z"/></svg>
+          Hum &nbsp;25 %
+        </div>
+      </div>
+      <div class="rp-mini-right">
+        <div class="rp-mini-city">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          NY
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="mini-ico"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="rp-mini-temp">31°</div>
+      </div>
+    </div>
+
+  </aside><!-- /right-panel -->
+
+</div><!-- /app -->
+
+<script src="script.js"></script>
+</body>
 </html>
