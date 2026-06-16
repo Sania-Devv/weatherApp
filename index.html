@@ -7,23 +7,50 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
 
-<body class="font-nunito bg-gray-100">
+<body class="font-nunito bg-[#E2E8F0] dark:bg-gray-900 min-h-screen flex flex-col lg:flex-row lg:items-center lg:justify-center p-2 sm:p-4 lg:p-8 transition-colors duration-300 text-gray-800 dark:text-gray-100">
 
-  <div class="dashboard flex h-screen">
+  <div id="toastContainer" class="fixed bottom-4 right-4 w-[280px] sm:w-[calc(20vw-2rem)] space-y-2 z-50 flex flex-col items-center"></div>
 
-    <!-- LEFT SIDEBAR CONTAINER -->
-    <aside id="sidebar" class="w-1/5 bg-gray-900 text-white p-4"></aside>
+  <div class="dashboard flex flex-col lg:flex-row w-full max-w-[1300px] min-h-[100dvh] lg:h-[90vh] bg-white dark:bg-gray-800 lg:rounded-[40px] shadow-xl overflow-hidden relative">
+
+    <!-- LEFT SIDEBAR: hidden on mobile, shown on lg as vertical pill -->
+    <aside id="sidebar" class="hidden lg:flex w-[90px] flex-shrink-0 relative z-20 flex-col"></aside>
+
+    <!-- MOBILE TOP BAR (shown only on mobile/tablet) -->
+    <div id="mobileBar" class="flex lg:hidden items-center justify-between bg-[#5C9CE6] dark:bg-gray-900 px-4 py-3 text-white shadow-md">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-[#FF729F] rounded-xl flex items-center justify-center shadow">
+          <i class="fa-solid fa-border-all text-lg"></i>
+        </div>
+        <span class="font-bold text-base">Weather App</span>
+      </div>
+      <div id="mobileToggle" onclick="globalToggleDarkMode()" class="flex items-center bg-white/20 rounded-full p-1 cursor-pointer gap-1">
+        <div id="themeSunMobile" class="px-2 py-1 rounded-full text-sm">☀️</div>
+        <div id="themeMoonMobile" class="px-2 py-1 rounded-full text-sm">🌙</div>
+      </div>
+    </div>
 
     <!-- MAIN CONTAINER -->
-    <main id="main" class="w-3/5 p-4"></main>
+    <main id="main" class="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto no-scrollbar transition-colors duration-300 order-2 lg:order-none"></main>
 
     <!-- RIGHT CONTAINER (SEARCH + WEATHER) -->
-    <aside id="right" class="w-1/5 bg-white p-4 shadow-lg"></aside>
+    <aside id="right" class="w-full lg:w-[360px] flex-shrink-0 bg-[#F4F7FC] dark:bg-gray-900/50 p-4 sm:p-6 lg:p-8 overflow-y-auto no-scrollbar border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700 transition-colors duration-300 order-1 lg:order-none"></aside>
 
   </div>
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 const sidebar = document.getElementById("sidebar");
 const main = document.getElementById("main");
 const right = document.getElementById("right");
+const toastContainer = document.getElementById("toastContainer");
 
 // GLOBAL VARIABLE: Isko top par rakhna zaroori hai taake poore code ko current city ka pata ho
-let currentCity = "Dhaka"; 
+let currentCity = "Dhaka";
 
 /* =========================
    STATIC DATA
@@ -28,11 +29,79 @@ function renderApp() {
   renderRightPanel();
 
   setTimeout(() => {
+    applyDarkMode();
+    updateClock();
+    setInterval(updateClock, 60000);
     renderForecastCards();
     renderLeftCards();
-    renderRightCards(); 
+    renderRightCards();
+    renderBottomCard();
     initWeatherApp();
   }, 0);
+}
+
+let isDarkMode = localStorage.getItem("darkMode") === "true";
+
+function applyDarkMode() {
+  const html = document.documentElement;
+  const sun = document.getElementById("themeSun");
+  const moon = document.getElementById("themeMoon");
+  const sunMob = document.getElementById("themeSunMobile");
+  const moonMob = document.getElementById("themeMoonMobile");
+  
+  if (isDarkMode) {
+    html.classList.add("dark");
+    if(sun) sun.className = "p-1 px-2 rounded-full text-white/50 text-sm transition-colors";
+    if(moon) moon.className = "p-1 px-2 rounded-full bg-blue-500 text-white shadow-sm text-sm transition-colors";
+    if(sunMob) sunMob.className = "px-2 py-1 rounded-full text-white/50 text-sm";
+    if(moonMob) moonMob.className = "px-2 py-1 rounded-full bg-white/30 text-white text-sm";
+  } else {
+    html.classList.remove("dark");
+    if(sun) sun.className = "p-1 px-2 rounded-full bg-blue-500 text-white shadow-sm text-sm transition-colors";
+    if(moon) moon.className = "p-1 px-2 rounded-full text-gray-500 text-sm transition-colors";
+    if(sunMob) sunMob.className = "px-2 py-1 rounded-full bg-white/30 text-white text-sm";
+    if(moonMob) moonMob.className = "px-2 py-1 rounded-full text-white/50 text-sm";
+  }
+}
+
+window.globalToggleDarkMode = () => {
+  isDarkMode = !isDarkMode;
+  localStorage.setItem("darkMode", isDarkMode);
+  applyDarkMode();
+};
+
+function updateClock() {
+  const timeEl = document.getElementById("liveTime");
+  const dateEl = document.getElementById("liveDate");
+  const greetingText = document.getElementById("greetingText");
+  const greetingIcon = document.getElementById("greetingIcon");
+  
+  if(!timeEl) return;
+  
+  const now = new Date();
+  
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  timeEl.textContent = `${hours}:${minutes} ${ampm}`;
+  
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  dateEl.textContent = now.toLocaleDateString('en-US', options);
+  
+  const currentHour = now.getHours();
+  if (currentHour < 12) {
+    greetingText.textContent = "Good morning, Asif!";
+    greetingIcon.textContent = "🌤️";
+  } else if (currentHour < 18) {
+    greetingText.textContent = "Good afternoon, Asif!";
+    greetingIcon.textContent = "☀️";
+  } else {
+    greetingText.textContent = "Good evening, Asif!";
+    greetingIcon.textContent = "🌙";
+  }
 }
 
 /* =========================
@@ -40,10 +109,22 @@ function renderApp() {
 ========================= */
 function renderSidebar() {
   sidebar.innerHTML = `
-    <h2 class="text-xl font-bold mb-4">Weather App</h2>
-    <button class="block mb-2">Dashboard</button>
-    <button class="block mb-2">Locations</button>
-    <button class="block mb-2">Settings</button>
+    <div class="h-full flex flex-col items-start justify-center pl-0">
+      <div class="bg-[#5C9CE6] dark:bg-gray-700 w-[80px] rounded-r-3xl overflow-hidden shadow-lg flex flex-col items-center">
+        <!-- Active Icon (Pink) -->
+        <div class="w-full h-[80px] bg-[#FF729F] flex items-center justify-center text-white cursor-pointer hover:opacity-90">
+          <i class="fa-solid fa-border-all text-2xl"></i>
+        </div>
+        <!-- Other Icons (Blue) -->
+        <div class="w-full flex flex-col items-center py-8 gap-8 text-white/70 text-xl">
+          <div class="cursor-pointer hover:text-white"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="cursor-pointer hover:text-white"><i class="fa-solid fa-chart-simple"></i></div>
+          <div class="cursor-pointer hover:text-white"><i class="fa-solid fa-compass"></i></div>
+          <div class="cursor-pointer hover:text-white"><i class="fa-solid fa-calendar"></i></div>
+          <div class="cursor-pointer hover:text-white"><i class="fa-solid fa-gear"></i></div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -52,12 +133,26 @@ function renderSidebar() {
 ========================= */
 function renderMain() {
   main.innerHTML = `
-    <h1 class="text-2xl font-bold mb-4">Weather Dashboard</h1>
-    <div id="forecast" class="grid grid-cols-6 gap-2 mb-6"></div>
-    <div class="grid grid-cols-2 gap-4">
-      <div id="leftCards" class="space-y-4"></div>
-      <div id="rightCards" class="space-y-4"></div>
+    <div class="flex justify-between items-start mb-4 sm:mb-6">
+      <div>
+        <h1 id="liveTime" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-500">--:-- --</h1>
+        <p id="liveDate" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-semibold mb-1 sm:mb-2">...</p>
+        <div class="text-sm sm:text-base lg:text-lg font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <span id="greetingIcon">🌤️</span>
+          <span id="greetingText">Good morning, Asif!</span>
+        </div>
+      </div>
+      <div class="hidden lg:flex items-center bg-gray-200 dark:bg-gray-700 rounded-full p-1 cursor-pointer" onclick="globalToggleDarkMode()">
+        <div id="themeSun" class="p-1 px-2 rounded-full bg-blue-500 text-white shadow-sm text-sm transition-colors">☀️</div>
+        <div id="themeMoon" class="p-1 px-2 rounded-full text-gray-500 dark:text-gray-400 text-sm transition-colors">🌙</div>
+      </div>
     </div>
+    <div id="forecast" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-4 sm:mb-6"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+      <div id="leftCards"></div>
+      <div id="rightCards"></div>
+    </div>
+    <div id="bottomCard"></div>
   `;
 }
 
@@ -69,10 +164,10 @@ function renderForecastCards() {
   container.innerHTML = weeklyForecast
     .map(
       (item) => `
-    <div class="bg-white p-2 rounded shadow text-center">
-      <div class="text-sm font-semibold">${item.day}</div>
-      <div class="text-xl">${item.icon}</div>
-      <div class="text-sm font-bold">${item.temp}°</div>
+    <div class="bg-white dark:bg-gray-800 dark:text-white p-2 rounded-xl shadow text-center transition-colors">
+      <div class="text-xs sm:text-sm font-semibold">${item.day}</div>
+      <div class="text-lg sm:text-xl">${item.icon}</div>
+      <div class="text-xs sm:text-sm font-bold">${item.temp}°</div>
     </div>
   `
     )
@@ -85,15 +180,11 @@ function renderForecastCards() {
 function renderLeftCards() {
   const left = document.getElementById("leftCards");
   left.innerHTML = `
-    <div class="bg-white p-4 rounded shadow">
-      <h2 class="font-bold mb-2">Air Quality Index</h2>
-      <div class="text-sm">PM2.5: 9.3 | PM10: 12.2</div>
-      <div class="text-green-600 font-bold mt-2">Good</div>
+    <div class="bg-white dark:bg-gray-800 dark:text-white p-3 sm:p-4 rounded-2xl shadow transition-colors h-full">
+      <h2 class="font-bold text-sm sm:text-base mb-2">Air Quality Index</h2>
+      <div class="text-xs sm:text-sm">PM2.5: 9.3 | PM10: 12.2</div>
+      <div class="text-green-600 font-bold mt-2 text-sm sm:text-base">Good</div>
     </div>
-   <div class="bg-white p-4 rounded shadow mt-4">
-      <h2 class="font-bold mb-2">Hourly Temperature</h2>
-      <canvas id="hourlyChart"></canvas>
-   </div>
   `;
 }
 
@@ -103,20 +194,26 @@ function renderLeftCards() {
 function renderRightCards() {
   const rightCards = document.getElementById("rightCards");
   rightCards.innerHTML = `
-    <div class="bg-white p-4 rounded shadow">
-      <h2 class="font-bold mb-2">Sunrise & Sunset</h2>
-      <div class="flex justify-between text-sm">
+    <div class="bg-white dark:bg-gray-800 dark:text-white p-3 sm:p-4 rounded-2xl shadow transition-colors h-full">
+      <h2 class="font-bold text-sm sm:text-base mb-2">Sunrise & Sunset</h2>
+      <div class="flex justify-between text-xs sm:text-sm">
         <span>🌅 5:40 AM</span>
         <span>🌇 6:50 PM</span>
       </div>
     </div>
-    <div class="bg-blue-100 p-4 rounded shadow">
-      <h3 class="font-bold">Tokyo</h3>
-      <p>🌤️ 26°</p>
-    </div>
-    <div class="bg-orange-100 p-4 rounded shadow">
-      <h3 class="font-bold">New York</h3>
-      <p>☀️ 31°</p>
+  `;
+}
+
+/* =========================
+   BOTTOM CARD (HOURLY CHART — FULL WIDTH)
+========================= */
+function renderBottomCard() {
+  const bottom = document.getElementById("bottomCard");
+  if (!bottom) return;
+  bottom.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 dark:text-white p-3 sm:p-4 rounded-2xl shadow transition-colors">
+      <h2 class="font-bold text-sm sm:text-base mb-2 sm:mb-3">Hourly Temperature</h2>
+      <canvas id="hourlyChart"></canvas>
     </div>
   `;
 }
@@ -126,48 +223,62 @@ function renderRightCards() {
 ========================= */
 function renderRightPanel() {
   right.innerHTML = `
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col h-full">
       <div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
-      <div>
-        <input id="searchInput" class="w-full p-2 border rounded" placeholder="Search city..." />
-        <button id="geoBtn" class="w-full mt-2 bg-green-500 text-white p-2 rounded flex items-center justify-center gap-2">
-          <i class="fa-solid fa-location-crosshairs"></i> Use My Location
-        </button>
+      
+      <!-- Search Bar & Profile -->
+      <div class="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+        <div class="relative flex-1 bg-white dark:bg-gray-700 rounded-2xl shadow-sm px-3 sm:px-4 py-2 flex items-center">
+          <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+          <input id="searchInput" class="w-full pl-2 sm:pl-3 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 outline-none text-xs sm:text-sm" placeholder="Search..." />
+        </div>
+        <div class="flex items-center gap-2 sm:gap-4 text-gray-400 flex-shrink-0">
+          <button class="relative hover:text-gray-600 transition">
+            <i class="fa-regular fa-bell text-lg sm:text-xl"></i>
+            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          </button>
+          <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-sm cursor-pointer" />
+        </div>
       </div>
+      
+      <button id="geoBtn" class="w-full mb-3 sm:mb-4 bg-green-500 text-white p-2 rounded-xl flex items-center justify-center gap-2 shadow hover:bg-green-600 transition text-xs sm:text-sm">
+        <i class="fa-solid fa-location-crosshairs"></i> Use My Location
+      </button>
 
       <div id="search-spinner" class="hidden text-blue-500 text-sm text-center">Loading...</div>
       <div id="rp-error" class="hidden bg-red-100 text-red-600 p-2 rounded text-sm text-center">
         <span id="rp-error-msg"></span>
       </div>
 
-      <div id="weatherCard" class="relative bg-blue-400 text-white p-5 rounded-2xl space-y-4 shadow-md overflow-hidden">
-        
-        <button id="heartIconBtn" onclick="globalToggleFav()" class="absolute top-4 right-4 text-2xl focus:outline-none transition-transform active:scale-90 z-10" title="Favorite City">
+      <div id="errorState" class="hidden flex-col items-center justify-center p-4 sm:p-6 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl text-center shadow-md">
+        <div class="text-4xl sm:text-5xl mb-2 sm:mb-3">⚠️</div>
+        <h3 class="font-bold text-base sm:text-lg mb-1">City Not Found</h3>
+        <p class="text-xs sm:text-sm opacity-80 mb-3 sm:mb-4">Please check the spelling and try again.</p>
+        <button onclick="globalLoadCity('Dhaka')" class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 transition text-sm">Retry</button>
+      </div>
+
+      <div id="weatherCard" class="relative bg-blue-400 text-white p-4 sm:p-5 rounded-2xl space-y-3 sm:space-y-4 shadow-md overflow-hidden">
+        <button id="heartIconBtn" onclick="globalToggleFav()" class="absolute top-3 right-3 sm:top-4 sm:right-4 text-xl sm:text-2xl focus:outline-none transition-transform active:scale-90 z-10" title="Favorite City">
           🤍
         </button>
-
-        <div class="flex items-center gap-1 text-sm opacity-90">
+        <div class="flex items-center gap-1 text-xs sm:text-sm opacity-90">
           <i class="fa-solid fa-location-dot"></i>
           <span id="cityName" class="font-semibold">Dhaka</span>
         </div>
-        
-        <div class="text-center py-2">
-          <div id="rp-icon" class="text-5xl mb-1">🌤️</div>
-          <p id="condition" class="text-sm tracking-wide opacity-90">Sunny</p>
-          <h1 id="temperature" class="text-5xl font-black mt-1">29°C</h1>
+        <div class="text-center py-1 sm:py-2">
+          <div id="rp-icon" class="text-4xl sm:text-5xl mb-1">🌤️</div>
+          <p id="condition" class="text-xs sm:text-sm tracking-wide opacity-90">Sunny</p>
+          <h1 id="temperature" class="text-4xl sm:text-5xl font-black mt-1">29°C</h1>
         </div>
-
-        <div class="flex justify-between items-center text-xs pt-3 border-t border-white/20 opacity-90">
+        <div class="flex justify-between items-center text-[10px] sm:text-xs pt-2 sm:pt-3 border-t border-white/20 opacity-90">
           <span id="wind">💨 Wind: -- km/h</span>
           <span id="humidity">💧 Hum: -- %</span>
         </div>
-        
-        <div id="rp-date" class="text-[10px] opacity-70 text-right"></div>
+        <div id="rp-date" class="text-[9px] sm:text-[10px] opacity-70 text-right"></div>
       </div>
 
-      <div class="space-y-2">
-        <div id="favList" class="space-y-3">
-          </div>
+      <div class="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
+        <div id="favList" class="space-y-2 sm:space-y-3"></div>
       </div>
 
     </div>
@@ -179,7 +290,7 @@ let errorTimeoutToken = null;
 
 function initWeatherApp() {
   const searchInput = document.getElementById("searchInput");
-  const geoBtn = document.getElementById("geoBtn"); 
+  const geoBtn = document.getElementById("geoBtn");
   const spinner = document.getElementById("search-spinner");
   const rpError = document.getElementById("rp-error");
   const rpErrorMsg = document.getElementById("rp-error-msg");
@@ -195,7 +306,11 @@ function initWeatherApp() {
 
   const API_KEY = "780f33a2f0d443a1b7765444261506";
   const BASE_URL = "https://api.weatherapi.com/v1";
-
+  let isInitialized = false;
+  function initWeatherApp() {
+    if (isInitialized) return;   // prevent double init
+    isInitialized = true;
+  }
   /* =========================
       FAVORITES LOGIC
   ========================= */
@@ -222,7 +337,7 @@ function initWeatherApp() {
       .map((city, index) => {
         const bgColors = ["bg-rose-400 text-white", "bg-amber-400 text-white"];
         const selectedStyle = bgColors[index % bgColors.length];
-        
+
         const cached = favWeatherDataCache[city.toLowerCase()] || {
           temp: "--",
           wind: "--",
@@ -263,7 +378,7 @@ function initWeatherApp() {
   function updateFavBtn() {
     const heartIconBtn = document.getElementById("heartIconBtn");
     if (!heartIconBtn) return;
-    
+
     const favs = getFavCities();
     if (favs.map(c => c.toLowerCase()).includes(currentCity.toLowerCase())) {
       heartIconBtn.innerHTML = `❤️`;
@@ -281,15 +396,23 @@ function initWeatherApp() {
     const cityKey = currentCity.toLowerCase();
 
     if (favs.map(c => c.toLowerCase()).includes(cityKey)) {
+
       favs = favs.filter((c) => c.toLowerCase() !== cityKey);
       delete favWeatherDataCache[cityKey];
+
+      showToast(`${currentCity} removed from favourites`, "warning");
+
     } else {
+
       favs.push(currentCity);
+
       favWeatherDataCache[cityKey] = {
         temp: temperatureEl.textContent.replace('°C', '').trim(),
         wind: windEl.textContent.replace('💨 Wind: ', '').replace(' km/h', '').trim(),
         hum: humidityEl.textContent.replace('💧 Hum: ', '').replace(' %', '').trim()
       };
+
+      showToast(`${currentCity} added to favourites`, "success");
     }
 
     saveFavCities(favs);
@@ -321,32 +444,92 @@ function initWeatherApp() {
   /* =========================
       💥 FIXED ERROR HANDLER (SINGLE POPUP LOCK)
   ========================= */
-  function showError(msg) {
-    // Agar pehle se koi error active chal raha hai, to naya toast push nahi hoga
-    if (!rpError.classList.contains("hidden") && rpErrorMsg.textContent === msg) {
-      return; 
-    }
+  function showToast(message, type = "info") {
+    const toast = document.createElement("div");
 
-    // Purane chalte hue setTimeout timer ko clear karna zaroori hai
-    if (errorTimeoutToken) {
-      clearTimeout(errorTimeoutToken);
-    }
+    const colors = {
+      success: "bg-green-500",
+      error: "bg-red-500",
+      info: "bg-blue-500",
+      warning: "bg-amber-500",
+    };
 
-    rpErrorMsg.textContent = msg;
-    rpError.classList.remove("hidden");
+    toast.className = `
+    ${colors[type]}
+    text-white text-[13px] px-3 py-2 rounded-lg shadow-lg
+    w-full text-center
+  `;
 
-    // Exact single instance window management closure
-    errorTimeoutToken = setTimeout(() => {
-      rpError.classList.add("hidden");
-      errorTimeoutToken = null;
-    }, 2500);
+    toast.textContent = message;
+
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("opacity-0", "transition-opacity", "duration-300");
+
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 3000);
   }
+  // function showError(msg) {
+  //   // Agar pehle se koi error active chal raha hai, to naya toast push nahi hoga
+  //   if (!rpError.classList.contains("hidden") && rpErrorMsg.textContent === msg) {
+  //     return; 
+  //   }
+
+  //   // Purane chalte hue setTimeout timer ko clear karna zaroori hai
+  //   if (errorTimeoutToken) {
+  //     clearTimeout(errorTimeoutToken);
+  //   }
+
+  //   rpErrorMsg.textContent = msg;
+  //   rpError.classList.remove("hidden");
+
+  //   // Exact single instance window management closure
+  //   errorTimeoutToken = setTimeout(() => {
+  //     rpError.classList.add("hidden");
+  //     errorTimeoutToken = null;
+  //   }, 2500);
+  // }
 
   /* =========================
-      LOADING TOGGLE
+      LOADING TOGGLE & SKELETONS
   ========================= */
+  function renderSkeletons() {
+    cityNameEl.innerHTML = `<div class="h-4 bg-white/30 rounded w-24 animate-pulse"></div>`;
+    temperatureEl.innerHTML = `<div class="h-10 bg-white/30 rounded w-32 mx-auto animate-pulse mt-1"></div>`;
+    conditionEl.innerHTML = `<div class="h-3 bg-white/30 rounded w-16 mx-auto animate-pulse"></div>`;
+    windEl.innerHTML = `<div class="h-3 bg-white/30 rounded w-20 animate-pulse"></div>`;
+    humidityEl.innerHTML = `<div class="h-3 bg-white/30 rounded w-20 animate-pulse"></div>`;
+    rpIconEl.innerHTML = `<div class="w-16 h-16 bg-white/30 rounded-full mx-auto animate-pulse mb-1"></div>`;
+    rpDateEl.innerHTML = ``;
+    
+    const container = document.getElementById("forecast");
+    if (container) {
+      container.innerHTML = Array(6).fill(0).map(() => `
+        <div class="bg-white dark:bg-gray-800 dark:text-white p-2 rounded shadow text-center animate-pulse transition-colors">
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-8 mx-auto mb-2"></div>
+          <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto my-2"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12 mx-auto"></div>
+        </div>
+      `).join("");
+    }
+  }
+
   function setLoading(state) {
     spinner.classList.toggle("hidden", !state);
+    const weatherCard = document.getElementById("weatherCard");
+    const errState = document.getElementById("errorState");
+    
+    if (state) {
+      if(errState) {
+         errState.classList.add("hidden");
+         errState.classList.remove("flex");
+      }
+      if(weatherCard) weatherCard.classList.remove("hidden");
+      renderSkeletons();
+    }
   }
 
   /* =========================
@@ -362,7 +545,7 @@ function initWeatherApp() {
       if (!res.ok) throw new Error("Invalid city name");
 
       const data = await res.json();
-      currentCity = data.location.name; 
+      currentCity = data.location.name;
 
       /* =========================
          CURRENT WEATHER UPDATE
@@ -378,7 +561,7 @@ function initWeatherApp() {
       `;
 
       rpDateEl.textContent = new Date(data.location.localtime).toDateString();
-      
+
       updateFavBtn();
       renderForecast(data.forecast.forecastday);
 
@@ -389,9 +572,18 @@ function initWeatherApp() {
       }));
 
       renderHourlyChart(nextHours);
-    } catch (err) {
-      showError(err.message);
-    } finally {
+    }
+    catch (err) {
+      showToast("City not found. Please try again.", "error");
+      const weatherCard = document.getElementById("weatherCard");
+      const errState = document.getElementById("errorState");
+      if(weatherCard) weatherCard.classList.add("hidden");
+      if(errState) {
+        errState.classList.remove("hidden");
+        errState.classList.add("flex");
+      }
+    }
+    finally {
       setLoading(false);
     }
     renderFavList();
@@ -407,7 +599,7 @@ function initWeatherApp() {
     container.innerHTML = forecastDays
       .map((day) => {
         return `
-        <div class="bg-white p-2 rounded shadow text-center">
+        <div class="bg-white dark:bg-gray-800 dark:text-white p-2 rounded shadow text-center transition-colors">
           <div class="text-xs font-bold mb-1">
             ${new Date(day.date).toDateString().slice(0, 10)}
           </div>
@@ -415,7 +607,7 @@ function initWeatherApp() {
           <div class="text-sm font-bold mt-1">
             ${Math.round(day.day.mintemp_c)}° / ${Math.round(day.day.maxtemp_c)}°
           </div>
-          <div class="text-xs text-gray-600">
+          <div class="text-xs text-gray-600 dark:text-gray-400 transition-colors">
             ${day.day.condition.text}
           </div>
         </div>
@@ -457,8 +649,11 @@ function initWeatherApp() {
       📍 GEOLOCATION FEATURE
   ========================= */
   geoBtn.addEventListener("click", () => {
+
+    showToast("Fetching your location...", "info");
+
     if (!navigator.geolocation) {
-      showError("Geolocation not supported");
+      showToast("Geolocation not supported", "error");
       return;
     }
 
@@ -499,7 +694,8 @@ function initWeatherApp() {
       },
       () => {
         setLoading(false);
-        showError("Location access denied.");
+
+        showToast("Location access denied.", "error");
       }
     );
   });
@@ -510,7 +706,7 @@ function initWeatherApp() {
 }
 
 /* IMPORTANT */
-document.addEventListener("DOMContentLoaded", initWeatherApp);
+// document.addEventListener("DOMContentLoaded", initWeatherApp);
 
 /* =========================
    CHART
