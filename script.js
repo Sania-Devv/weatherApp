@@ -1,314 +1,556 @@
-/* ═══════════════════════════════════════════════════════
-   WeatherScope — script.js
-   Search functionality + Theme + Clock + Chart + Sidebar
-   ═══════════════════════════════════════════════════════ */
+const sidebar = document.getElementById("sidebar");
+const main = document.getElementById("main");
+const right = document.getElementById("right");
 
+// GLOBAL VARIABLE: Isko top par rakhna zaroori hai taake poore code ko current city ka pata ho
+let currentCity = "Dhaka"; 
 
-/* ──────────────────────────────────────────────────────
-   CONFIG — WeatherAPI.com
-─────────────────────────────────────────────────────── */
-const API_KEY  = '780f33a2f0d443a1b7765444261506';
-const BASE_URL = 'https://api.weatherapi.com/v1';
-
-// API URL builders
-const getCurrentWeather = (city) =>
-  `${BASE_URL}/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=no`;
-
-const getForecast = (city) =>
-  `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=5&aqi=no`;
-
-
-/* ──────────────────────────────────────────────────────
-   DOM REFERENCES
-─────────────────────────────────────────────────────── */
-const searchInput  = document.getElementById('searchInput');
-const searchWrap   = document.getElementById('search-wrap');
-const spinner      = document.getElementById('search-spinner');
-const rpError      = document.getElementById('rp-error');
-const rpErrorMsg   = document.getElementById('rp-error-msg');
-
-// Right panel city card elements (updateUI targets)
-const cityNameEl   = document.getElementById('cityName');
-const temperatureEl= document.getElementById('temperature');
-const conditionEl  = document.getElementById('condition');
-const windEl       = document.getElementById('wind');
-const humidityEl   = document.getElementById('humidity');
-const rpIconEl     = document.getElementById('rp-icon');
-const rpDateEl     = document.getElementById('rp-date');
-
-
-/* ──────────────────────────────────────────────────────
-   WEATHER API — Fetch & Update UI
-─────────────────────────────────────────────────────── */
-
-// Map WeatherAPI condition codes to emoji icons
-function getWeatherEmoji(code, isDay) {
-  // Sunny / Clear
-  if ([1000].includes(code)) return isDay ? '☀️' : '🌙';
-  // Partly cloudy
-  if ([1003].includes(code)) return isDay ? '⛅' : '🌤️';
-  // Cloudy / Overcast
-  if ([1006, 1009].includes(code)) return '☁️';
-  // Mist / Fog
-  if ([1030, 1135, 1147].includes(code)) return '🌫️';
-  // Light rain / Drizzle
-  if ([1063, 1150, 1153, 1168, 1171, 1180, 1183].includes(code)) return '🌦️';
-  // Heavy rain
-  if ([1186, 1189, 1192, 1195, 1198, 1201].includes(code)) return '🌧️';
-  // Thunderstorm
-  if ([1087, 1273, 1276, 1279, 1282].includes(code)) return '⛈️';
-  // Snow / Sleet
-  if ([1066, 1069, 1072, 1114, 1117, 1204, 1207, 1210, 1213, 1216,
-       1219, 1222, 1225, 1237, 1249, 1252, 1255, 1258, 1261, 1264].includes(code)) return '❄️';
-  return '🌡️';
-}
-
-// Update the right panel UI with fetched data
-function updateUI(data) {
-  const loc = data.location;
-  const cur = data.current;
-
-  // City name
-  cityNameEl.textContent = loc.name;
-
-  // Temperature — show as "29°" like in image (no "C")
-  temperatureEl.textContent = `${Math.round(cur.temp_c)}°`;
-
-  // Condition text
-  conditionEl.textContent = cur.condition.text;
-
-  // Wind
-  windEl.textContent = `${cur.wind_kph} km/h`;
-
-  // Humidity
-  humidityEl.textContent = `${cur.humidity} %`;
-
-  // Weather emoji icon
-  rpIconEl.textContent = getWeatherEmoji(cur.condition.code, cur.is_day);
-
-  // Date — "Today, 14 April" style
-  const d = new Date(loc.localtime);
-  const dateStr = d.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
-  rpDateEl.textContent = `Today, ${dateStr}`;
-}
-
-// Show/hide error message
-function showError(msg) {
-  rpErrorMsg.textContent = msg;
-  rpError.classList.remove('hidden');
-}
-
-function hideError() {
-  rpError.classList.add('hidden');
-}
-
-// Show/hide loading spinner
-function setLoading(on) {
-  if (on) {
-    spinner.classList.remove('hidden');
-  } else {
-    spinner.classList.add('hidden');
-  }
-}
-
-// Main fetch function
-async function getWeather(city) {
-  if (!city.trim()) return;
-
-  hideError();
-  setLoading(true);
-
-  try {
-    const url      = getCurrentWeather(city);
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      // 400 = city not found, 401 = bad API key
-      if (response.status === 400) {
-        throw new Error('City not found. Please check the name.');
-      } else if (response.status === 401) {
-        throw new Error('Invalid API key. Check config.');
-      } else {
-        throw new Error('Failed to fetch weather data.');
-      }
-    }
-
-    const data = await response.json();
-    updateUI(data);
-
-  } catch (error) {
-    showError(error.message);
-  } finally {
-    setLoading(false);
-  }
-}
-
-
-/* ──────────────────────────────────────────────────────
-   DEBOUNCE — Wait 600ms after user stops typing
-─────────────────────────────────────────────────────── */
-function debounce(func, delay) {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => func.apply(this, args), delay);
-  };
-}
-
-function searchCity(city) {
-  if (!city.trim()) {
-    hideError();
-    return;
-  }
-  getWeather(city);
-}
-
-// Debounced search — fires 600ms after user stops typing
-const debouncedSearch = debounce(searchCity, 600);
-
-// Wire up search input
-if (searchInput) {
-  searchInput.addEventListener('input', (e) => {
-    debouncedSearch(e.target.value);
-  });
-
-  // Also search on Enter key (immediate, no debounce)
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const city = e.target.value.trim();
-      if (city) getWeather(city);
-    }
-  });
-}
-
-
-/* ──────────────────────────────────────────────────────
-   THEME TOGGLE
-   Light / Dark — saved in localStorage
-─────────────────────────────────────────────────────── */
-function initTheme() {
-  const saved = localStorage.getItem('ws-theme') || 'light';
-  applyTheme(saved);
-}
-
-// Called by onclick on HTML buttons
-function setTheme(mode) {
-  applyTheme(mode);
-  localStorage.setItem('ws-theme', mode);
-}
-
-function applyTheme(mode) {
-  const html  = document.documentElement;
-  const light = document.getElementById('btn-light');
-  const dark  = document.getElementById('btn-dark');
-
-  if (mode === 'dark') {
-    html.classList.remove('light');
-    html.classList.add('dark');
-    if (dark)  dark.classList.add('active');
-    if (light) light.classList.remove('active');
-  } else {
-    html.classList.remove('dark');
-    html.classList.add('light');
-    if (light) light.classList.add('active');
-    if (dark)  dark.classList.remove('active');
-  }
-}
-
-
-/* ──────────────────────────────────────────────────────
-   LIVE CLOCK + GREETING
-─────────────────────────────────────────────────────── */
-function updateClock() {
-  const now  = new Date();
-  const h    = now.getHours();
-  const m    = now.getMinutes().toString().padStart(2, '0');
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12  = (h % 12 || 12).toString().padStart(2, '0');
-
-  const timeEl = document.getElementById('live-time');
-  if (timeEl) timeEl.textContent = `${h12}:${m} ${ampm}`;
-
-  // Dynamic greeting
-  const greetEl = document.getElementById('greeting-text');
-  if (greetEl) {
-    const word = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
-    greetEl.textContent = `Good ${word}, Asif!`;
-  }
-}
-
-updateClock();
-setInterval(updateClock, 1000);
-
-
-/* ──────────────────────────────────────────────────────
-   FORECAST DAY SELECTION
-─────────────────────────────────────────────────────── */
-function activateDay(el) {
-  document.querySelectorAll('.fc-card').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-}
-
-
-/* ──────────────────────────────────────────────────────
-   SIDEBAR NAV ACTIVE STATE
-─────────────────────────────────────────────────────── */
-function initSidebar() {
-  document.querySelectorAll('.nav-icon').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-icon').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-}
-
-
-/* ──────────────────────────────────────────────────────
-   MONTHLY RAINFALL BAR CHART
-   Pure DOM bars — no library
-─────────────────────────────────────────────────────── */
-const RAINFALL = [
-  { rain: 55, sun: 70 }, { rain: 40, sun: 58 }, { rain: 68, sun: 52 },
-  { rain: 82, sun: 38 }, { rain: 60, sun: 74 }, { rain: 44, sun: 82 },
-  { rain: 28, sun: 92 }, { rain: 34, sun: 88 }, { rain: 62, sun: 60 },
-  { rain: 78, sun: 44 }, { rain: 50, sun: 62 }, { rain: 42, sun: 54 },
+/* =========================
+   STATIC DATA
+========================= */
+const weeklyForecast = [
+  { day: "Sun", icon: "⛈️", temp: 28 },
+  { day: "Mon", icon: "🌧️", temp: 17 },
+  { day: "Tue", icon: "⛅", temp: 20 },
+  { day: "Wed", icon: "⛈️", temp: 29 },
+  { day: "Thu", icon: "🌙", temp: 22 },
+  { day: "Fri", icon: "🌤️", temp: 16 },
 ];
 
-function buildChart() {
-  const container = document.getElementById('bar-chart');
-  if (!container) return;
-  container.innerHTML = '';
+/* =========================
+   INIT
+========================= */
+renderApp();
 
-  RAINFALL.forEach(d => {
-    const g = document.createElement('div');
-    g.className = 'bar-group';
+function renderApp() {
+  renderSidebar();
+  renderMain();
+  renderRightPanel();
 
-    const r = document.createElement('div');
-    r.className = 'bar rain';
-    r.style.height = `${(d.rain / 100) * 86}px`;
-    r.title = `Rain: ${d.rain}mm`;
-
-    const s = document.createElement('div');
-    s.className = 'bar sun';
-    s.style.height = `${(d.sun / 100) * 86}px`;
-    s.title = `Sun: ${d.sun}hrs`;
-
-    g.appendChild(r);
-    g.appendChild(s);
-    container.appendChild(g);
-  });
+  setTimeout(() => {
+    renderForecastCards();
+    renderLeftCards();
+    renderRightCards(); 
+    initWeatherApp();
+  }, 0);
 }
 
+/* =========================
+   SIDEBAR
+========================= */
+function renderSidebar() {
+  sidebar.innerHTML = `
+    <h2 class="text-xl font-bold mb-4">Weather App</h2>
+    <button class="block mb-2">Dashboard</button>
+    <button class="block mb-2">Locations</button>
+    <button class="block mb-2">Settings</button>
+  `;
+}
 
-/* ──────────────────────────────────────────────────────
-   INIT
-─────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  initSidebar();
-  buildChart();
-  updateClock();
+/* =========================
+   MAIN LAYOUT
+========================= */
+function renderMain() {
+  main.innerHTML = `
+    <h1 class="text-2xl font-bold mb-4">Weather Dashboard</h1>
+    <div id="forecast" class="grid grid-cols-6 gap-2 mb-6"></div>
+    <div class="grid grid-cols-2 gap-4">
+      <div id="leftCards" class="space-y-4"></div>
+      <div id="rightCards" class="space-y-4"></div>
+    </div>
+  `;
+}
 
-  // Load default city on startup
-  getWeather('Dhaka');
-});
+/* =========================
+   FORECAST
+========================= */
+function renderForecastCards() {
+  const container = document.getElementById("forecast");
+  container.innerHTML = weeklyForecast
+    .map(
+      (item) => `
+    <div class="bg-white p-2 rounded shadow text-center">
+      <div class="text-sm font-semibold">${item.day}</div>
+      <div class="text-xl">${item.icon}</div>
+      <div class="text-sm font-bold">${item.temp}°</div>
+    </div>
+  `
+    )
+    .join("");
+}
+
+/* =========================
+   LEFT CARDS
+========================= */
+function renderLeftCards() {
+  const left = document.getElementById("leftCards");
+  left.innerHTML = `
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="font-bold mb-2">Air Quality Index</h2>
+      <div class="text-sm">PM2.5: 9.3 | PM10: 12.2</div>
+      <div class="text-green-600 font-bold mt-2">Good</div>
+    </div>
+   <div class="bg-white p-4 rounded shadow mt-4">
+      <h2 class="font-bold mb-2">Hourly Temperature</h2>
+      <canvas id="hourlyChart"></canvas>
+   </div>
+  `;
+}
+
+/* =========================
+   RIGHT COLUMN (LEFT SIDE INSIDE MAIN)
+========================= */
+function renderRightCards() {
+  const rightCards = document.getElementById("rightCards");
+  rightCards.innerHTML = `
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="font-bold mb-2">Sunrise & Sunset</h2>
+      <div class="flex justify-between text-sm">
+        <span>🌅 5:40 AM</span>
+        <span>🌇 6:50 PM</span>
+      </div>
+    </div>
+    <div class="bg-blue-100 p-4 rounded shadow">
+      <h3 class="font-bold">Tokyo</h3>
+      <p>🌤️ 26°</p>
+    </div>
+    <div class="bg-orange-100 p-4 rounded shadow">
+      <h3 class="font-bold">New York</h3>
+      <p>☀️ 31°</p>
+    </div>
+  `;
+}
+
+/* =========================
+   RIGHT PANEL (Clean Layout)
+========================= */
+function renderRightPanel() {
+  right.innerHTML = `
+    <div class="flex flex-col gap-4">
+      <div id="toastContainer" class="fixed top-4 right-4 space-y-2 z-50"></div>
+      <div>
+        <input id="searchInput" class="w-full p-2 border rounded" placeholder="Search city..." />
+        <button id="geoBtn" class="w-full mt-2 bg-green-500 text-white p-2 rounded flex items-center justify-center gap-2">
+          <i class="fa-solid fa-location-crosshairs"></i> Use My Location
+        </button>
+      </div>
+
+      <div id="search-spinner" class="hidden text-blue-500 text-sm text-center">Loading...</div>
+      <div id="rp-error" class="hidden bg-red-100 text-red-600 p-2 rounded text-sm text-center">
+        <span id="rp-error-msg"></span>
+      </div>
+
+      <div id="weatherCard" class="relative bg-blue-400 text-white p-5 rounded-2xl space-y-4 shadow-md overflow-hidden">
+        
+        <button id="heartIconBtn" onclick="globalToggleFav()" class="absolute top-4 right-4 text-2xl focus:outline-none transition-transform active:scale-90 z-10" title="Favorite City">
+          🤍
+        </button>
+
+        <div class="flex items-center gap-1 text-sm opacity-90">
+          <i class="fa-solid fa-location-dot"></i>
+          <span id="cityName" class="font-semibold">Dhaka</span>
+        </div>
+        
+        <div class="text-center py-2">
+          <div id="rp-icon" class="text-5xl mb-1">🌤️</div>
+          <p id="condition" class="text-sm tracking-wide opacity-90">Sunny</p>
+          <h1 id="temperature" class="text-5xl font-black mt-1">29°C</h1>
+        </div>
+
+        <div class="flex justify-between items-center text-xs pt-3 border-t border-white/20 opacity-90">
+          <span id="wind">💨 Wind: -- km/h</span>
+          <span id="humidity">💧 Hum: -- %</span>
+        </div>
+        
+        <div id="rp-date" class="text-[10px] opacity-70 text-right"></div>
+      </div>
+
+      <div class="space-y-2">
+        <div id="favList" class="space-y-3">
+          </div>
+      </div>
+
+    </div>
+  `;
+}
+
+// Global variable timeout track karne ke liye taake overlapping na ho
+let errorTimeoutToken = null;
+
+function initWeatherApp() {
+  const searchInput = document.getElementById("searchInput");
+  const geoBtn = document.getElementById("geoBtn"); 
+  const spinner = document.getElementById("search-spinner");
+  const rpError = document.getElementById("rp-error");
+  const rpErrorMsg = document.getElementById("rp-error-msg");
+
+  const cityNameEl = document.getElementById("cityName");
+  const temperatureEl = document.getElementById("temperature");
+  const conditionEl = document.getElementById("condition");
+  const windEl = document.getElementById("wind");
+  const humidityEl = document.getElementById("humidity");
+  const rpIconEl = document.getElementById("rp-icon");
+  const rpDateEl = document.getElementById("rp-date");
+  const favList = document.getElementById("favList");
+
+  const API_KEY = "780f33a2f0d443a1b7765444261506";
+  const BASE_URL = "https://api.weatherapi.com/v1";
+
+  /* =========================
+      FAVORITES LOGIC
+  ========================= */
+  let favWeatherDataCache = JSON.parse(localStorage.getItem("favWeatherDataCache")) || {};
+
+  function getFavCities() {
+    return JSON.parse(localStorage.getItem("favCities")) || [];
+  }
+
+  function saveFavCities(list) {
+    localStorage.setItem("favCities", JSON.stringify(list));
+  }
+
+  function renderFavList() {
+    const favs = getFavCities();
+    if (!favList) return;
+
+    if (favs.length === 0) {
+      favList.innerHTML = ``;
+      return;
+    }
+
+    favList.innerHTML = favs
+      .map((city, index) => {
+        const bgColors = ["bg-rose-400 text-white", "bg-amber-400 text-white"];
+        const selectedStyle = bgColors[index % bgColors.length];
+        
+        const cached = favWeatherDataCache[city.toLowerCase()] || {
+          temp: "--",
+          wind: "--",
+          hum: "--"
+        };
+
+        return `
+        <div class="relative group ${selectedStyle} p-4 rounded-2xl shadow-sm flex flex-col gap-1 cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md" 
+             onclick="globalLoadCity('${city}')">
+          
+          <button 
+            class="absolute top-2 right-3 text-white/70 hover:text-white font-bold text-xs p-1" 
+            onclick="event.stopPropagation(); globalRemoveCity('${city}')"
+            title="Remove">
+            ✕
+          </button>
+
+          <div class="flex justify-between items-start pr-5">
+            <div class="space-y-0.5 text-xs opacity-90 font-medium">
+              <div>🍃 Wind | ${cached.wind} km/h</div>
+              <div>💧 Hum | ${cached.hum}%</div>
+            </div>
+            
+            <div class="text-right">
+              <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-[10px]">
+                📌 ${city}
+              </span>
+              <h3 class="text-3xl font-black mt-1">${cached.temp}°</h3>
+            </div>
+          </div>
+          
+        </div>
+      `;
+      })
+      .join("");
+  }
+
+  function updateFavBtn() {
+    const heartIconBtn = document.getElementById("heartIconBtn");
+    if (!heartIconBtn) return;
+    
+    const favs = getFavCities();
+    if (favs.map(c => c.toLowerCase()).includes(currentCity.toLowerCase())) {
+      heartIconBtn.innerHTML = `❤️`;
+    } else {
+      heartIconBtn.innerHTML = `🤍`;
+    }
+  }
+
+  /* =========================
+      GLOBAL WINDOW TRIGGERS
+  ========================= */
+  window.globalToggleFav = () => {
+    if (!currentCity) return;
+    let favs = getFavCities();
+    const cityKey = currentCity.toLowerCase();
+
+    if (favs.map(c => c.toLowerCase()).includes(cityKey)) {
+      favs = favs.filter((c) => c.toLowerCase() !== cityKey);
+      delete favWeatherDataCache[cityKey];
+    } else {
+      favs.push(currentCity);
+      favWeatherDataCache[cityKey] = {
+        temp: temperatureEl.textContent.replace('°C', '').trim(),
+        wind: windEl.textContent.replace('💨 Wind: ', '').replace(' km/h', '').trim(),
+        hum: humidityEl.textContent.replace('💧 Hum: ', '').replace(' %', '').trim()
+      };
+    }
+
+    saveFavCities(favs);
+    localStorage.setItem("favWeatherDataCache", JSON.stringify(favWeatherDataCache));
+    renderFavList();
+    updateFavBtn();
+  };
+
+  window.globalLoadCity = (city) => {
+    if (searchInput) searchInput.value = city;
+    fetchWeather(city);
+  };
+
+  window.globalRemoveCity = (city) => {
+    let favs = getFavCities().filter((c) => c.toLowerCase() !== city.toLowerCase());
+    delete favWeatherDataCache[city.toLowerCase()];
+    saveFavCities(favs);
+    localStorage.setItem("favWeatherDataCache", JSON.stringify(favWeatherDataCache));
+    renderFavList();
+    updateFavBtn();
+  };
+
+  /* =========================
+      URL BUILDER (CITY SEARCH)
+  ========================= */
+  const getURL = (city) =>
+    `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=5&aqi=no`;
+
+  /* =========================
+      💥 FIXED ERROR HANDLER (SINGLE POPUP LOCK)
+  ========================= */
+  function showError(msg) {
+    // Agar pehle se koi error active chal raha hai, to naya toast push nahi hoga
+    if (!rpError.classList.contains("hidden") && rpErrorMsg.textContent === msg) {
+      return; 
+    }
+
+    // Purane chalte hue setTimeout timer ko clear karna zaroori hai
+    if (errorTimeoutToken) {
+      clearTimeout(errorTimeoutToken);
+    }
+
+    rpErrorMsg.textContent = msg;
+    rpError.classList.remove("hidden");
+
+    // Exact single instance window management closure
+    errorTimeoutToken = setTimeout(() => {
+      rpError.classList.add("hidden");
+      errorTimeoutToken = null;
+    }, 2500);
+  }
+
+  /* =========================
+      LOADING TOGGLE
+  ========================= */
+  function setLoading(state) {
+    spinner.classList.toggle("hidden", !state);
+  }
+
+  /* =========================
+      FETCH WEATHER (CITY SEARCH)
+  ========================= */
+  async function fetchWeather(city) {
+    if (!city || !city.trim()) return;
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(getURL(city));
+      if (!res.ok) throw new Error("Invalid city name");
+
+      const data = await res.json();
+      currentCity = data.location.name; 
+
+      /* =========================
+         CURRENT WEATHER UPDATE
+      ========================= */
+      cityNameEl.textContent = `${data.location.name}, ${data.location.country}`;
+      temperatureEl.textContent = `${Math.round(data.current.temp_c)}°C`;
+      conditionEl.textContent = data.current.condition.text;
+      windEl.textContent = `💨 Wind: ${data.current.wind_kph} km/h`;
+      humidityEl.textContent = `💧 Hum: ${data.current.humidity} %`;
+
+      rpIconEl.innerHTML = `
+        <img src="https:${data.current.condition.icon}" class="w-16 h-16 mx-auto drop-shadow"/>
+      `;
+
+      rpDateEl.textContent = new Date(data.location.localtime).toDateString();
+      
+      updateFavBtn();
+      renderForecast(data.forecast.forecastday);
+
+      const todayHourly = data.forecast.forecastday[0].hour;
+      const nextHours = todayHourly.slice(0, 8).map((item) => ({
+        time: item.time,
+        temp_c: item.temp_c,
+      }));
+
+      renderHourlyChart(nextHours);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      setLoading(false);
+    }
+    renderFavList();
+  }
+
+  /* =========================
+      FORECAST UI RENDER
+  ========================= */
+  function renderForecast(forecastDays) {
+    const container = document.getElementById("forecast");
+    if (!container) return;
+
+    container.innerHTML = forecastDays
+      .map((day) => {
+        return `
+        <div class="bg-white p-2 rounded shadow text-center">
+          <div class="text-xs font-bold mb-1">
+            ${new Date(day.date).toDateString().slice(0, 10)}
+          </div>
+          <img src="https:${day.day.condition.icon}" class="w-10 h-10 mx-auto"/>
+          <div class="text-sm font-bold mt-1">
+            ${Math.round(day.day.mintemp_c)}° / ${Math.round(day.day.maxtemp_c)}°
+          </div>
+          <div class="text-xs text-gray-600">
+            ${day.day.condition.text}
+          </div>
+        </div>
+      `;
+      })
+      .join("");
+  }
+
+  /* =========================
+      DEBOUNCE (SEARCH DELAY)
+  ========================= */
+  function debounce(fn, delay = 600) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  const handleSearch = debounce((value) => {
+    fetchWeather(value);
+  }, 600);
+
+  /* =========================
+      SEARCH EVENTS
+  ========================= */
+  searchInput.addEventListener("input", (e) => {
+    handleSearch(e.target.value);
+  });
+
+  // Jab user Enter hit karega, to chalte hue debounce search ko abort karega taake double call na ho
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      fetchWeather(e.target.value);
+    }
+  });
+
+  /* =========================
+      📍 GEOLOCATION FEATURE
+  ========================= */
+  geoBtn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      showError("Geolocation not supported");
+      return;
+    }
+
+    setLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        try {
+          const res = await fetch(
+            `${BASE_URL}/forecast.json?key=${API_KEY}&q=${lat},${lon}&days=5&aqi=no`,
+          );
+          if (!res.ok) throw new Error("Location weather not found");
+
+          const data = await res.json();
+          currentCity = data.location.name;
+
+          cityNameEl.textContent = `${data.location.name}, ${data.location.country}`;
+          temperatureEl.textContent = `${Math.round(data.current.temp_c)}°C`;
+          conditionEl.textContent = data.current.condition.text;
+          windEl.textContent = `💨 Wind: ${data.current.wind_kph} km/h`;
+          humidityEl.textContent = `💧 Hum: ${data.current.humidity} %`;
+
+          rpIconEl.innerHTML = `
+            <img src="https:${data.current.condition.icon}" class="w-16 h-16 mx-auto drop-shadow"/>
+          `;
+
+          rpDateEl.textContent = new Date(data.location.localtime).toDateString();
+          renderForecast(data.forecast.forecastday);
+          updateFavBtn();
+        } catch (err) {
+          showError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        setLoading(false);
+        showError("Location access denied.");
+      }
+    );
+  });
+
+  renderFavList();
+  updateFavBtn();
+  fetchWeather(currentCity);
+}
+
+/* IMPORTANT */
+document.addEventListener("DOMContentLoaded", initWeatherApp);
+
+/* =========================
+   CHART
+========================= */
+let hourlyChartInstance = null;
+
+function renderHourlyChart(hourlyData) {
+  const ctx = document.getElementById("hourlyChart");
+  if (!ctx) return;
+
+  if (hourlyChartInstance) {
+    hourlyChartInstance.destroy();
+  }
+
+  const labels = hourlyData.map((item) => item.time.split(" ")[1].slice(0, 5));
+  const temps = hourlyData.map((item) => item.temp_c);
+
+  hourlyChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Temperature (°C)",
+          data: temps,
+          borderColor: "blue",
+          backgroundColor: "rgba(0,0,255,0.1)",
+          tension: 0.4,
+          fill: true,
+          pointRadius: 3,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+        },
+      },
+    },
+  });
+}
