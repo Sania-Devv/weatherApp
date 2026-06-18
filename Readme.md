@@ -1,37 +1,87 @@
-Weather Dashboard Project:
+Weather Dashboard Application
 Project Description:
-
-This Weather Dashboard is a responsive web application that shows real-time weather information for any city. It allows users to search cities, view current weather conditions, check forecasts, see hourly temperature trends, and save favorite locations. The app also supports geolocation to fetch weather based on the user's current position.
-
-The project is built using HTML, Tailwind CSS, and JavaScript, and it uses WeatherAPI for live weather data.
+Weather Dashboard is a responsive web application that allows users to view real-time weather information for different cities. Users can search for any city, check current weather conditions, view air quality information, monitor sunrise and sunset timings, and manage their favorite cities. The application also supports dark mode and displays hourly and forecast weather data using charts.
 
 Features:
+1. City Search
+⦁	 Search weather information by city name.
+⦁	Real-time weather updates using Weather API.
+⦁	Debounced search for better performance.
+2. Current Weather Information
+⦁	City Name
+⦁	Country Name
+⦁	Temperature (°C)
+⦁	Weather Condition
+⦁	Wind Speed
+⦁	Humidity
+ 3. Forecast Weather
+⦁	Multi-day weather forecast.
+⦁	Minimum and maximum temperature display.
+⦁	Weather condition updates for upcoming days.
+4. Air Quality Index (AQI)
+⦁	Shows air quality by displaying key pollutants like PM2.5, PM10, SO₂, NO₂, O₃, and CO in an easy-to-understand way.
+⦁	Shows the UV Index to indicate how strong the sun’s UV radiation is for safety awareness.
+5. Sunrise & Sunset Information
+⦁	 Sunrise time
+⦁	 Sunset time
+⦁	Location-based weather details
+6. Favorites Management
+⦁	Add cities to favorites.
+⦁	Remove cities from favorites.
+⦁	Store favorite cities using Local Storage.
+⦁	Quick access to saved cities.
+ 7. Geolocation Support
+⦁	 Get weather information using the user's current location.
+ 8. Dark Mode
+⦁	 Toggle between Light Mode and Dark Mode.
+⦁	 User preference is saved in Local Storage.
+ 9. Error Handling
+⦁	 Invalid city detection.
+⦁	 API error handling.
+⦁	Retry option for failed requests.
+10. Toast Notifications
+⦁	 Success messages
+⦁	 Error messages
+⦁	 Warning messages
+⦁	Informational messages
+11. Loading Skeletons
+⦁	Skeleton loading UI while data is being fetched.
+12. Hourly Temperature Chart
+⦁	Displays hourly temperature trends.
+⦁	 Dynamic chart updates based on selected city.
 
-Search weather by city name
-Real-time weather updates
-5-day weather forecast
-Hourly temperature chart
-Geolocation support (use current location)
-Save and remove favorite cities
-Persistent favorites using local storage
-Dark mode support
-Responsive UI for mobile and desktop
-Toast notifications for user actions and errors
-Loading skeleton for better UX
-Error handling for invalid cities or API failures
-Setup Instructions
-Download or clone the project folder
-Open the project in any code editor (VS Code recommended)
-Make sure all files are in the same directory
-Open index.html in a browser
-No build tools required
 API Key Guide
+⦁	To fetch real-time weather data, this project uses WeatherAPI.
+ Steps to Get and Use the API Key
+⦁	 Visit the WeatherAPI website:
+⦁	   https://www.weatherapi.com/
+⦁	Create a free account on WeatherAPI.
+⦁	Generate an API key from the dashboard.
+⦁	Copy the generated API key.
+⦁	Open the JavaScript file (`script.js`).
+⦁	Paste the API key in the `API_KEY` variable.
+⦁	Save the file and run the project.
 
-This project uses WeatherAPI.
+ Note:
+⦁	 A valid API key is required to fetch weather data.
+⦁	Keep your API key private and do not share it publicly.
 
-Steps to set up API key:
-
-Go to https://www.weatherapi.com/
-Create a free account
-Copy your API key from the dashboard
-Open script.js file
+ Setup Instructions
+⦁	First, the project requirements were understood.
+⦁	 A project folder was created and the required files ( index.htm, script.js) were added.
+⦁	A WeatherAPI account was created.
+⦁	 An API key was generated from the WeatherAPI dashboard.
+⦁	The generated API key was added to the JavaScript file.
+⦁	The user interface was developed using HTML, Tailwind CSS, and JavaScript.
+⦁	Weather API integration was implemented to fetch real-time weather data.
+⦁	Additional features such as dark mode, favorites, forecast, air quality, geolocation, and charts were added.
+⦁	 The project was tested and errors were fixed.
+⦁	 The final application was run in the browser using Live Server.
+ 
+ Technologies Used
+⦁	HTML5
+⦁	Tailwind CSS
+⦁	 JavaScript 
+⦁	 Local Storage
+⦁	Chart.js
+⦁	WeatherAPI
